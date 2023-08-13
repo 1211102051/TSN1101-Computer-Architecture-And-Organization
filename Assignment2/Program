@@ -1,0 +1,194 @@
+		;Q25.	The 32 bits value stored in 0x2000 till 0x2000 + 36 is actually the timestamp in BCD format.
+		;		For example, 00:HH:MM:SEC. For example 0x00233435 is represented as 23 hour 34 min 35 second.
+		;If		the time format is valid, store “1111” in 0x2100 till (0x2100 + 36).
+		;		Else store “2222” in 0x2100 till (0x2100 + 36).
+		
+		;		Person 1, 1111111111
+		;		Person 2, 1111111111
+		
+		;		Data initialization
+		;		move r0,#0x11111111
+		mov		r0,#0x11000000
+		mov		r1,#0x00110000
+		mov		r2,#0x00001100
+		mov		r3,#0x00000011
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		mov		r8,#0x2000
+		str		r0, [r8]
+		
+		;		move r0,#0x22223333
+		mov		r0,#0x22000000
+		mov		r1,#0x00220000
+		mov		r2,#0x00003300
+		mov		r3,#0x00000033
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8, #4]
+		
+		;		move r0,#0x31111111
+		mov		r0,#0x31000000
+		mov		r1,#0x00110000
+		mov		r2,#0x00001100
+		mov		r3,#0x00000011
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8, #8]
+		
+		;		move r0,#0x42223333
+		mov		r0,#0x42000000
+		mov		r1,#0x00220000
+		mov		r2,#0x00003300
+		mov		r3,#0x00000033
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8,#12]
+		
+		;		move r0,#0x51111111
+		mov		r0,#0x51000000
+		mov		r1,#0x00110000
+		mov		r2,#0x00001100
+		mov		r3,#0x00000011
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8,#16]
+		
+		;		move r0,#0x62223333
+		mov		r0,#0x62000000
+		mov		r1,#0x00220000
+		mov		r2,#0x00003300
+		mov		r3,#0x00000033
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8,#20]
+		
+		;		move r0,#0x71111111
+		mov		r0,#0x71000000
+		mov		r1,#0x00110000
+		mov		r2,#0x00001100
+		mov		r3,#0x00000011
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8,#24]
+		
+		;		move r0,#0x82223333
+		mov		r0,#0x82000000
+		mov		r1,#0x00220000
+		mov		r2,#0x00003300
+		mov		r3,#0x00000033
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8,#28]
+		
+		;		move r0,#0x91111111
+		mov		r0,#0x91000000
+		mov		r1,#0x00110000
+		mov		r2,#0x00001100
+		mov		r3,#0x00000011
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8,#32]
+		
+		;		move r0,#0xA2223333
+		mov		r0,#0xA2000000
+		mov		r1,#0x00220000
+		mov		r2,#0x00003300
+		mov		r3,#0x00000033
+		add		r0, r0, r1
+		add		r0, r0, r2
+		add		r0, r0, r3
+		str		r0, [r8,#36]
+		
+		mov		r0, #0x2000 ;source pointer
+		
+		mov		r1, #0xA ;counter for loop
+		
+		;		start loop
+loop
+		ldr		r5, [r0] ; Load a value from memory pointed by r0 into r5
+		
+		sub		r1, r1, #1 ; Decrement counter
+		mov		r2, #1 ; Set r2 to 1 (initially assume data is valid)
+		
+		bl		check ;call the check function to validate the loaded data
+		;		if valid, r2 = 1, else r2 = 0
+		
+		cmp		r2, #0 ;compare r2 and 0
+		
+		;		if r2 = 0, output 0x2222 to memory
+		moveq	r8, #0x2200
+		addeq	r8, r8, #0x22
+		
+		cmp		r2, #1 ;compare r2 and 1
+		
+		;		if r2 - 1, output 0x1111 to memory
+		moveq	r8, #0x1100
+		addeq	r8, r8, #0x11
+		
+		;		Store the value to memory
+		str		r8, [r0, #0x100] ; Store the value of r8 into the memory address of (r0 + #0x100)
+		add		r0, r0, #0x4 ; Increment r0 by 4 to get the data of next address
+		cmp		r1, #0
+		bgt		loop ; loop again if the value of r1 > 0
+		end
+		
+		
+check
+		;		check 00
+		and		r6, r5, #0xFF000000 ; get the first two nibbles (nibbles is half a byte or 4 bit)
+		cmp		r6, #0x00 ; compare them to 0x00
+		movne	r2, #0 ; if they are not the same, set flag to 0
+		
+		;		check HH
+		and		r6, r5, #0x00F00000 ; get the third nibble
+		and		r7, r5, #0x000F0000 ; get the fourth nibble
+		
+		mov		r6, r6, lsr #20 ; shift value of r6 to the right (#0x00F00000 -> #0x0000000F)
+		mov		r7, r7, lsr #16 ; shift value of r7 to the right (#0x000F0000 -> #0x0000000F)
+		
+		cmp		r6, #0x2 ; compare the first one to 2
+		movgt	r2, #0 ; if its bigger, then invalid
+		
+		cmp		r7, #0x9 ; compare the second nibble to 9
+		movgt	r2, #0 ; if its bigger, then invalid
+		
+		cmp		r6, #0x2 ; check if the first nibble is 2 and..
+		cmpeq	r7, #3 ; the second nibble more than 3
+		movgt	r2, #0 ; in which case, invalid
+		
+		;check	MM
+		and		r6, r5, #0x0000F000 ; get the fifth nibble
+		and		r7, r5, #0x00000F00 ; get the sixth nibble
+		
+		mov		r6, r6, lsr #12 ; shift value of r6 to the right (#0x0000F000 -> #0x0000000F)
+		mov		r7, r7, lsr #8 ; shift value of r7 to the right (#0x00000F00 -> #0x0000000F)
+		
+		cmp		r6, #0x5 ; check if the first nibble is more than 0x5
+		movgt	r2, #0 ; if so invalid
+		
+		cmp		r7, #0x9 ; check if the second nibble is more than 0x9
+		movgt	r2, #0 ; if so, then invalid
+		
+		;check	SS
+		and		r6, r5, #0x000000F0 ; get the last two nibbles
+		and		r7, r5, #0x0000000F
+		
+		mov		r6, r6, lsr #4 ; shift value of r6 to the right (#0x000000F0 -> #0x0000000F)
+		
+		cmp		r6, #0x5 ; check if the first nibble is bigger than 0x5
+		movgt	r2, #0 ; if so, then invalid
+		
+		cmp		r7, #0x9 ; check if the first nibble is bigger than 0x9
+		movgt	r2, #0 ; if so, then invalid
+		
+		;		return address
+		mov		pc, lr
